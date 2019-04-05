@@ -1,0 +1,8 @@
+name: model_exploration
+dependencies:
+  - python=3.7
+  - pandas
+  - numpy
+  - scikit-learn
+  - requests
+  - nb_conda
