@@ -1,0 +1,12 @@
+
+# Ignore data folder
+data/
+
+# Ignore some R-related files
+*.Rproj*
+.RData
+.Rhistory
+
+# Ignore some python-related files
+.ipynb_checkpoints/
+.idea/
