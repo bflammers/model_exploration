@@ -1,6 +1,7 @@
 
 # Ignore data folder
-data/
+data/*
+!data/data.json
 
 # Ignore some R-related files
 *.Rproj*
@@ -10,3 +11,4 @@ data/
 # Ignore some python-related files
 .ipynb_checkpoints/
 .idea/
+__pycache__
