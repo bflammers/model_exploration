@@ -3,6 +3,9 @@ import pandas as pd
 import numpy as np
 import os
 import json
+import requests
+import scipy.io
+import h5py
 
 class DataLoader:
 
@@ -12,22 +15,35 @@ class DataLoader:
             Keyword arguments:
             dataset_name -- kdd-smtp, kdd-http, forest-cover or shuttle
         """
+
         self.data_dir = data_dir
         self.dataset_dir = os.path.join(data_dir, dataset_name)
         self.dataset_name = dataset_name
-        self.data_present = False
 
         if not os.path.isdir(data_dir):
             raise Exception("{} directory not present".format(data_dir))
 
-        print("--> reading data attributes json")
-        with open(os.path.join(data_dir, "data.json"), "r") as json_file:
+        print("--> reading json with dataset attributes")
+        with open(os.path.join(data_dir, "datasets.json"), "r") as json_file:
             data_attributes = json.load(json_file)
 
-        self.dataset_attributes = data_attributes[dataset_name]
+        self.URL = data_attributes[dataset_name]["URL"]
+        self.file_type = data_attributes[dataset_name]["file_type"]
+        self.unlabelled = bool(data_attributes[dataset_name]["is_unlabelled"])
 
-        self._check_data_present()
+        self.raw_data_file = os.path.join(self.dataset_dir,
+                                          "raw_data" + self.file_type)
+        self.data_present = self._check_data_present()
 
+        if not self.data_present:
+            print("--> no data present")
+            self._download_data()
+        else:
+            print("--> data is present")
+
+        self.df = None
+        self._read_data()
+        print("--> data loaded, shape: {}".format(self.df.shape))
 
     @staticmethod
     def _check_dir_present(dir_path):
@@ -39,38 +55,79 @@ class DataLoader:
     def _check_data_present(self):
         self._check_dir_present(self.data_dir)
         self._check_dir_present(self.dataset_dir)
-
-        X_present = os.path.exists(os.path.join(self.dataset_dir, "X"))
-        y_present = os.path.exists(os.path.join(self.dataset_dir, "y"))
-
-        if not X_present and not y_present:
-            print("--> no data present")
-            self._download_data()
-        elif X_present and y_present:
-            print("--> data is present")
-            self.data_present = True
-        else:
-            raise Exception("Only X or y present, not both.")
+        return os.path.exists(self.raw_data_file)
 
     def _download_data(self):
+
         print("--> downloading {} dataset from {}"
-              .format(self.dataset_name, self.dataset_attributes["URL"]))
-        pass
+              .format(self.dataset_name, self.URL))
+
+        r = requests.get(self.URL)
+        data_file = r.content
+
+        print("--> writing raw data to {}".format(self.raw_data_file))
+        if self.file_type == ".mat":
+
+            with open(self.raw_data_file, 'wb') as out_file:
+                out_file.write(data_file)
+
+        elif self.file_type == ".csv":
+
+            raise NotImplementedError("filetype: .csv")
+
+        else:
+
+            raise Exception("Unknown filetype: {}".format(self.file_type))
+
+        self.data_present = True
+
+    def _reads_odds_stonybrook_data(self):
+
+        try:
+            raw = scipy.io.loadmat(self.raw_data_file)
+        except NotImplementedError:
+            with h5py.File(self.raw_data_file, 'r') as in_file:
+                raw = {"X": np.transpose(np.array(in_file["X"])),
+                       "y": np.transpose(np.array(in_file["y"]))}
+
+        self.df = pd.DataFrame(raw['X'])
+        self.df["y"] = raw["y"]
+
+    def _read_data(self):
+
+        if not self.data_present:
+            self._reads_odds_stonybrook_data()
+        elif self.dataset_name == "kdd-smtp":
+            self._reads_odds_stonybrook_data()
+        elif self.dataset_name == "kdd-http":
+            self._reads_odds_stonybrook_data()
+        elif self.dataset_name == "forest-cover":
+            self._reads_odds_stonybrook_data()
+        elif self.dataset_name == "shuttle":
+            self._reads_odds_stonybrook_data()
+        else:
+            raise Exception("Dataset present but _read_data not supported")
 
     def get_X(self):
+
         if not self.data_present:
             raise Exception("Data not present")
-        pass
+
+        return self.df.drop(columns=["y"])
 
     def get_y(self):
+
         if not self.data_present:
             raise Exception("Data not present")
-        pass
+        elif self.unlabelled:
+            raise Exception("Dataset present but not labelled")
+
+        return self.df["y"]
+
 
 
 if __name__ == "__main__":
-    print('Yess')
 
-    dataloader = DataLoader('kdd')
-    print(dataloader._check_dir_present())
-    dataloader.get_X()
+    dataloader = DataLoader('kdd-smtp')
+    print("X shape: ", dataloader.get_X().shape)
+    print("y shape: ", dataloader.get_y().shape)

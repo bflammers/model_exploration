@@ -6,3 +6,5 @@ dependencies:
   - scikit-learn
   - requests
   - nb_conda
+  - scipy
+  - h5py
