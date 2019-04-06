@@ -1,0 +1,26 @@
+{
+	"kdd-smtp" : {
+		"URL" : "https://www.dropbox.com/s/dbv2u4830xri7og/smtp.mat?dl=1",
+		"file_type" : ".mat",
+		"is_unlabelled" : 0,
+		"reference" : "http://odds.cs.stonybrook.edu/smtp-kddcup99-dataset/"
+	},
+	"kdd-http" : {
+		"URL" : "https://www.dropbox.com/s/iy9ucsifal754tp/http.mat?dl=1",
+		"file_type" : ".mat",
+		"is_unlabelled" : 0,
+		"reference" : "http://odds.cs.stonybrook.edu/http-kddcup99-dataset/"
+	},
+	"forest-cover" : {
+		"URL" : "https://www.dropbox.com/s/awx8iuzbu8dkxf1/cover.mat?dl=1",
+		"file_type" : ".mat",
+		"is_unlabelled" : 0,
+		"reference" : "http://odds.cs.stonybrook.edu/forestcovercovertype-dataset/"
+	},
+	"shuttle" : {
+		"URL" : "https://www.dropbox.com/s/mk8ozgisimfn3dw/shuttle.mat?dl=1",
+		"file_type" : ".mat",
+		"is_unlabelled" : 0,
+		"reference" : "http://odds.cs.stonybrook.edu/shuttle-dataset/"
+	}
+}

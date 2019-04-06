@@ -1,7 +1,7 @@
 
 # Ignore data folder
 data/*
-!data/data.json
+!data/datasets.json
 
 # Ignore some R-related files
 *.Rproj*
