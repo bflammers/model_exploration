@@ -25,7 +25,7 @@ And start the jupyter notebook server:
 jupyter notebook
 ```
 
-If you conda environment is not found by jupyter notebook, try installing nb_conda in your base environment:
+If your conda environment is not found by jupyter notebook, try installing nb_conda in your base environment:
 ```
 conda deactivate
 conda install nb_conda
