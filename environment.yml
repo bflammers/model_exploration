@@ -8,3 +8,4 @@ dependencies:
   - nb_conda
   - scipy
   - h5py
+  - matplotlib
