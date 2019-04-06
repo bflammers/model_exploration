@@ -67,16 +67,11 @@ class DataLoader:
 
         print("--> writing raw data to {}".format(self._raw_data_file))
         if self._file_type == ".mat":
-
             with open(self._raw_data_file, 'wb') as out_file:
                 out_file.write(data_file)
-
         elif self._file_type == ".csv":
-
             raise NotImplementedError("filetype: .csv")
-
         else:
-
             raise Exception("Unknown filetype: {}".format(self._file_type))
 
         self._data_present = True
