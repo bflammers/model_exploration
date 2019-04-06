@@ -1,7 +1,7 @@
 # Model exploration
-This repository contains code for exploring various anomaly detection models as well as testing and comparing their performance on realistic data sets. 
+This repository contains code for exploring various anomaly detection models as well as comparing their performance on realistic data sets. 
 
-The data/ folder is added to the .gitignore and will thus not be pushed to the remote repo on Github.
+The content of the data/ folder is added to the .gitignore and will thus not be pushed to the remote repo on Github, with the exception of the data/datasets.json file. This json file contains download locations and other information about anomaly detection datasets.
 
 ***
 <br/>
