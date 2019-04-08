@@ -42,8 +42,22 @@ If you need a new package, but it is not currently installed in the environment,
 ```
 conda install -n model_exploration <package-name>
 ```
-And then add a new line with the package name to the environment.yml file. 
+And then add a new line with the package name to the environment.yml file using a text editor or from the command line with `echo "  - <package-name>" >> environment.yml`.
 
+***
+<br/>
+
+## Incremental install new libraries
+
+If you pull from Github, and a new library is used in the code, you will get an error similar to:
+
+> ModuleNotFoundError: No module named 'h5py'
+
+This is because the new library has not been installed in your local model_exploration conda environment. Assuming the new package has been added to the environment.yml file, you can incrementally new packages with the following command:
+
+```
+conda env update -n model_exploration -f environment.yml
+```
 
 
 
