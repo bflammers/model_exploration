@@ -17,7 +17,10 @@ class BenchMark:
         self.output_dir = self._set_output_dir(output_dir)
         self.datasets = download_all(dataset_exclude)
 
-        
+        # TODO: copy from https://github.com/yzhao062/pyod/blob/master/notebooks/benchmark.py
+        # TODO: same format as https://pyod.readthedocs.io/en/latest/benchmark.html
+
+
 
 
     @staticmethod
