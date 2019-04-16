@@ -1,6 +1,9 @@
 name: model_exploration
+channels:
+  - conda-forge
 dependencies:
   - python=3.7
+  - pip
   - pandas
   - numpy
   - scikit-learn
@@ -9,3 +12,6 @@ dependencies:
   - scipy
   - h5py
   - matplotlib
+  - pip:
+    - pyod
+

@@ -12,3 +12,4 @@ data/*
 .ipynb_checkpoints/
 .idea/
 __pycache__
+.Rproj.user

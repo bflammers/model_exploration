@@ -45,6 +45,12 @@ class DataLoader:
         self._read_data()
         print("--> data loaded, shape: {}".format(self._df.shape))
 
+    def __repr__(self):
+        return ("DataLoader object for {dset} dataset with {rows} rows and "
+                "{cols} columns").format(dset=self._dataset_name,
+                                         rows=self._df.shape[0],
+                                         cols=self._df.shape[1])
+
     @staticmethod
     def _check_dir_present(dir_path):
         if os.path.isdir(dir_path):
@@ -119,6 +125,18 @@ class DataLoader:
 
         return self._df["y"]
 
+
+def download_all(exclude=None):
+
+    print("--> reading json with dataset attributes")
+    with open("../data/datasets.json", "r") as json_file:
+        data_attributes = json.load(json_file)
+
+    for k in data_attributes.keys():
+        if exclude is not None and k not in exclude:
+            DataLoader(k)
+
+    return list(data_attributes.keys())
 
 
 if __name__ == "__main__":
