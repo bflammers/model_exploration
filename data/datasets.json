@@ -1,4 +1,4 @@
-{
+ {
 	"kdd-smtp" : {
 		"URL" : "https://www.dropbox.com/s/dbv2u4830xri7og/smtp.mat?dl=1",
 		"file_type" : ".mat",
@@ -22,5 +22,35 @@
 		"file_type" : ".mat",
 		"is_unlabelled" : 0,
 		"reference" : "http://odds.cs.stonybrook.edu/shuttle-dataset/"
+	},
+	"vowels" : {
+		"URL" : "https://www.dropbox.com/s/pa26odoq6atq9vx/vowels.mat?dl=1",
+		"file_type" : ".mat",
+		"is_unlabelled" : 0,
+		"reference" : "http://odds.cs.stonybrook.edu/japanese-vowels-data/"
+	},
+	"thyroid" : {
+		"URL" : "https://www.dropbox.com/s/bih0e15a0fukftb/thyroid.mat?dl=1",
+		"file_type" : ".mat",
+		"is_unlabelled" : 0,
+		"reference" : "http://odds.cs.stonybrook.edu/thyroid-disease-dataset/"
+	},
+	"" : {
+		"URL" : "",
+		"file_type" : ".mat",
+		"is_unlabelled" : 0,
+		"reference" : ""
+	},
+	"" : {
+		"URL" : "",
+		"file_type" : ".mat",
+		"is_unlabelled" : 0,
+		"reference" : ""
+	},
+	"" : {
+		"URL" : "",
+		"file_type" : ".mat",
+		"is_unlabelled" : 0,
+		"reference" : ""
 	}
 }
