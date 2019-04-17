@@ -15,10 +15,15 @@ class DataLoader:
             Keyword arguments:
             dataset_name -- kdd-smtp, kdd-http, forest-cover or shuttle
         """
+        print("Dataset name: {dset}".format(dset=dataset_name))
 
         self._data_dir = data_dir
         self._dataset_dir = os.path.join(data_dir, dataset_name)
         self._dataset_name = dataset_name
+
+        self.odds_datasets = ["lympho", "glass", "vowels", "thyroid",
+                              "shuttle", "kdd-http", "forest-cover",
+                              "kdd-smtp", "mammography", "annthyroid", "ecoli"]
 
         if not os.path.isdir(data_dir):
             raise Exception("{} directory not present".format(data_dir))
@@ -97,14 +102,8 @@ class DataLoader:
     def _read_data(self):
 
         if not self._data_present:
-            self._reads_odds_stonybrook_data()
-        elif self._dataset_name == "kdd-smtp":
-            self._reads_odds_stonybrook_data()
-        elif self._dataset_name == "kdd-http":
-            self._reads_odds_stonybrook_data()
-        elif self._dataset_name == "forest-cover":
-            self._reads_odds_stonybrook_data()
-        elif self._dataset_name == "shuttle":
+            raise Exception("data not present")
+        elif self._dataset_name in self.odds_datasets:
             self._reads_odds_stonybrook_data()
         else:
             raise Exception("Dataset present but _read_data not supported")
@@ -132,9 +131,12 @@ def download_all(exclude=None):
     with open("../data/datasets.json", "r") as json_file:
         data_attributes = json.load(json_file)
 
+    # Drop datasets without name
+    data_attributes.pop("", None)
+
     for k in data_attributes.keys():
-        if exclude is not None and k not in exclude:
-            DataLoader(k)
+        if exclude is None or k not in exclude:
+            DataLoader(dataset_name=k)
 
     return list(data_attributes.keys())
 
