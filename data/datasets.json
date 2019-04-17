@@ -1,56 +1,110 @@
- {
-	"kdd-smtp" : {
-		"URL" : "https://www.dropbox.com/s/dbv2u4830xri7og/smtp.mat?dl=1",
-		"file_type" : ".mat",
-		"is_unlabelled" : 0,
-		"reference" : "http://odds.cs.stonybrook.edu/smtp-kddcup99-dataset/"
-	},
-	"kdd-http" : {
-		"URL" : "https://www.dropbox.com/s/iy9ucsifal754tp/http.mat?dl=1",
-		"file_type" : ".mat",
-		"is_unlabelled" : 0,
-		"reference" : "http://odds.cs.stonybrook.edu/http-kddcup99-dataset/"
-	},
-	"forest-cover" : {
-		"URL" : "https://www.dropbox.com/s/awx8iuzbu8dkxf1/cover.mat?dl=1",
-		"file_type" : ".mat",
-		"is_unlabelled" : 0,
-		"reference" : "http://odds.cs.stonybrook.edu/forestcovercovertype-dataset/"
-	},
-	"shuttle" : {
-		"URL" : "https://www.dropbox.com/s/mk8ozgisimfn3dw/shuttle.mat?dl=1",
-		"file_type" : ".mat",
-		"is_unlabelled" : 0,
-		"reference" : "http://odds.cs.stonybrook.edu/shuttle-dataset/"
-	},
-	"vowels" : {
-		"URL" : "https://www.dropbox.com/s/pa26odoq6atq9vx/vowels.mat?dl=1",
-		"file_type" : ".mat",
-		"is_unlabelled" : 0,
-		"reference" : "http://odds.cs.stonybrook.edu/japanese-vowels-data/"
-	},
-	"thyroid" : {
-		"URL" : "https://www.dropbox.com/s/bih0e15a0fukftb/thyroid.mat?dl=1",
-		"file_type" : ".mat",
-		"is_unlabelled" : 0,
-		"reference" : "http://odds.cs.stonybrook.edu/thyroid-disease-dataset/"
-	},
-	"" : {
-		"URL" : "",
-		"file_type" : ".mat",
-		"is_unlabelled" : 0,
-		"reference" : ""
-	},
-	"" : {
-		"URL" : "",
-		"file_type" : ".mat",
-		"is_unlabelled" : 0,
-		"reference" : ""
-	},
-	"" : {
-		"URL" : "",
-		"file_type" : ".mat",
-		"is_unlabelled" : 0,
-		"reference" : ""
-	}
+{
+  "lympho" : {
+    "URL" : "https://www.dropbox.com/s/ag469ssk0lmctco/lympho.mat?dl=1",
+    "file_type" : ".mat",
+    "is_unlabelled" : 0,
+    "n_observations" : 148,
+    "n_features" : 18,
+    "prop_anomaly" : 0.041,
+    "reference" : "http://odds.cs.stonybrook.edu/lympho/"
+  },
+  "glass" : {
+    "URL" : "https://www.dropbox.com/s/iq3hjxw77gpbl7u/glass.mat?dl=1",
+    "file_type" : ".mat",
+    "is_unlabelled" : 0,
+    "n_observations" : 214,
+    "n_features" : 9,
+    "prop_anomaly" : 0.042,
+    "reference" : "http://odds.cs.stonybrook.edu/glass-data/"
+  },
+  "vowels" : {
+    "URL" : "https://www.dropbox.com/s/pa26odoq6atq9vx/vowels.mat?dl=1",
+    "file_type" : ".mat",
+    "is_unlabelled" : 0,
+    "n_observations" : 1456,
+    "n_features" : 12,
+    "prop_anomaly" : 0.034,
+    "reference" : "http://odds.cs.stonybrook.edu/japanese-vowels-data/"
+  },
+  "thyroid" : {
+    "URL" : "https://www.dropbox.com/s/bih0e15a0fukftb/thyroid.mat?dl=1",
+    "file_type" : ".mat",
+    "is_unlabelled" : 0,
+    "n_observations" : 3772,
+    "n_features" : 6,
+    "prop_anomaly" : 0.025,
+    "reference" : "http://odds.cs.stonybrook.edu/thyroid-disease-dataset/"
+  },
+  "shuttle" : {
+    "URL" : "https://www.dropbox.com/s/mk8ozgisimfn3dw/shuttle.mat?dl=1",
+    "file_type" : ".mat",
+    "is_unlabelled" : 0,
+    "n_observations" : 49097,
+    "n_features" : 9,
+    "prop_anomaly" : 0.07,
+    "reference" : "http://odds.cs.stonybrook.edu/shuttle-dataset/"
+  },
+  "kdd-http" : {
+    "URL" : "https://www.dropbox.com/s/iy9ucsifal754tp/http.mat?dl=1",
+    "file_type" : ".mat",
+    "is_unlabelled" : 0,
+    "n_observations" : 567479,
+    "n_features" : 3,
+    "prop_anomaly" : 0.004,
+    "reference" : "http://odds.cs.stonybrook.edu/http-kddcup99-dataset/"
+  },
+  "forest-cover" : {
+    "URL" : "https://www.dropbox.com/s/awx8iuzbu8dkxf1/cover.mat?dl=1",
+    "file_type" : ".mat",
+    "is_unlabelled" : 0,
+    "n_observations" : 286048,
+    "n_features" : 10,
+    "prop_anomaly" : 0.009,
+    "reference" : "http://odds.cs.stonybrook.edu/forestcovercovertype-dataset/"
+  },
+  "kdd-smtp" : {
+    "URL" : "https://www.dropbox.com/s/dbv2u4830xri7og/smtp.mat?dl=1",
+    "file_type" : ".mat",
+    "is_unlabelled" : 0,
+    "n_observations" : 95156,
+    "n_features" : 3,
+    "prop_anomaly" : 0.0003,
+    "reference" : "http://odds.cs.stonybrook.edu/smtp-kddcup99-dataset/"
+  },
+  "mammography" : {
+    "URL" : "https://www.dropbox.com/s/tq2v4hhwyv17hlk/mammography.mat?dl=1",
+    "file_type" : ".mat",
+    "is_unlabelled" : 0,
+    "n_observations" : 11183,
+    "n_features" : 6,
+    "prop_anomaly" : 0.0232,
+    "reference" : "http://odds.cs.stonybrook.edu/mammography-dataset/"
+  },
+  "annthyroid" : {
+    "URL" : "https://www.dropbox.com/s/aifk51owxbogwav/annthyroid.mat?dl=1",
+    "file_type" : ".mat",
+    "is_unlabelled" : 0,
+    "n_observations" : 7200,
+    "n_features" : 6,
+    "prop_anomaly" : 0.0742,
+    "reference" : "http://odds.cs.stonybrook.edu/annthyroid-dataset/"
+  },
+  "ecoli" : {
+    "URL" : "https://www.dropbox.com/s/f38mquv0g08xxgp/ecoli.mat?dl=1",
+    "file_type" : ".mat",
+    "is_unlabelled" : 0,
+    "n_observations" : 336,
+    "n_features" : 7,
+    "prop_anomaly" : 0.026,
+    "reference" : "http://odds.cs.stonybrook.edu/ecoli-dataset/"
+  },
+  "" : {
+    "URL" : "",
+    "file_type" : ".mat",
+    "is_unlabelled" : 0,
+    "n_observations" : 0,
+    "n_features" : 0,
+    "prop_anomaly" : 0,
+    "reference" : ""
+  }
 }
