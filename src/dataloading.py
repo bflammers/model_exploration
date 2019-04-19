@@ -18,7 +18,6 @@ class DataLoader:
         print("Dataset name: {dset}".format(dset=dataset_name))
 
         self._data_dir = data_dir
-        self._dataset_dir = os.path.join(data_dir, dataset_name)
         self._dataset_name = dataset_name
 
         self.odds_datasets = ["lympho", "glass", "vowels", "thyroid",
@@ -36,8 +35,8 @@ class DataLoader:
         self._file_type = data_attributes[dataset_name]["file_type"]
         self._unlabelled = bool(data_attributes[dataset_name]["is_unlabelled"])
 
-        self._raw_data_file = os.path.join(self._dataset_dir,
-                                          "raw_data" + self._file_type)
+        self._raw_data_file = os.path.join(self._data_dir,
+                                           dataset_name + self._file_type)
         self._data_present = self._check_data_present()
 
         if not self._data_present:
@@ -65,7 +64,6 @@ class DataLoader:
 
     def _check_data_present(self):
         self._check_dir_present(self._data_dir)
-        self._check_dir_present(self._dataset_dir)
         return os.path.exists(self._raw_data_file)
 
     def _download_data(self):
