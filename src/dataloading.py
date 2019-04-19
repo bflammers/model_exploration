@@ -132,11 +132,14 @@ def download_all(exclude=None):
     # Drop datasets without name
     data_attributes.pop("", None)
 
+    load_datasets = []
     for k in data_attributes.keys():
-        if exclude is None or k not in exclude:
-            DataLoader(dataset_name=k)
+        if exclude is not None:
+            if k not in exclude:
+                DataLoader(dataset_name=k)
+                load_datasets.append(k)
 
-    return list(data_attributes.keys())
+    return load_datasets
 
 
 if __name__ == "__main__":
