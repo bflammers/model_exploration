@@ -1,12 +1,15 @@
 
 import json
 import os
+import random
 
 from time import time, gmtime, strftime
 
 import pandas as pd
 import numpy as np
 
+# TODO: which models actually model the data?
+# TODO: select around 5 models for comparison
 from pyod.models.abod import ABOD
 from pyod.models.cblof import CBLOF
 from pyod.models.feature_bagging import FeatureBagging
@@ -25,6 +28,7 @@ from src.dataloading import DataLoader, download_all
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
+import matplotlib.pyplot as plt
 
 class BenchMark:
 
@@ -37,13 +41,21 @@ class BenchMark:
         df_columns = ['Data', 'nSamples', 'nDimensions', 'OutlierPerc', 'ABOD',
                       'CBLOF', 'FB', 'HBOS', 'IForest', 'MCD', 'OCSVM', 'PCA']
 
-        # initialize the container for saving the results
-        self.df_auc = pd.DataFrame(columns=df_columns)
-        self.df_topn = pd.DataFrame(columns=df_columns)
-        self.df_train_time = pd.DataFrame(columns=df_columns)
-        self.df_test_time = pd.DataFrame(columns=df_columns)
-
         self.iter_count = 0
+        self._latest_added_model = None
+
+        self.results = []
+
+    @staticmethod
+    def _set_output_dir(output_dir):
+
+        if output_dir is None:
+            suffix = strftime("%Y-%m-%d-%H-%M", gmtime())
+            output_dir = os.path.join("../benchmark", suffix)
+
+        os.makedirs(output_dir, exist_ok=True)
+
+        return output_dir
 
     @staticmethod
     def _draw_param_set(param_grid):
@@ -64,7 +76,7 @@ class BenchMark:
         clf.fit(X_train)
         t_stop = time()
 
-        return clf, round(t_stop - t_start, ndigits=4)
+        return clf, param_set, round(t_stop - t_start, ndigits=4)
 
     @staticmethod
     def _test_classifier(clf, y_test):
@@ -79,10 +91,10 @@ class BenchMark:
     @staticmethod
     def _eval_classifier(y_test, y_fit):
 
-        roc = round(roc_auc_score(y_test, y_fit), ndigits=4)
+        auc = round(roc_auc_score(y_test, y_fit), ndigits=4)
         topn = round(precision_n_scores(y_test, y_fit), ndigits=4)
 
-        return roc, topn
+        return auc, topn
 
     @staticmethod
     def _check_models(models):
@@ -110,27 +122,77 @@ class BenchMark:
             model = model_holder["model"]
             param_grid = model_holder["param_grid"]
 
-            # Fit classifier, measure train time
-            clf, train_time = \
+            # Draw new parameter set, fit classifier, measure train time
+            clf, param_set, train_time = \
                 BenchMark._fit_classifier(model, param_grid, dummy_X)
 
             # Apply classifier, measure test time
             _, test_time = BenchMark._test_classifier(clf, dummy_X)
 
-            print("Check {} model on dummy data, train time: {}, test time: {}"
-                  .format(model_name, train_time, test_time))
+            print("Check on dummy data: train time: {}s, test time: {}s -- {}"
+                  .format(train_time, test_time, model_name))
+
+    def _add_result(self, model_name, data_name, auc, topn, train_time,
+                    test_time, param_set):
+
+        result = {
+            "model": model_name,
+            "dataset": data_name,
+            "auc": auc,
+            "topn": topn,
+            "train_time": train_time,
+            "test_time": test_time,
+            "parameters": param_set
+        }
+
+        self.results.append(result)
+
+        file_path = os.path.join(self.output_dir, "backup.json")
+        with open(file_path, "w") as json_file:
+            json.dump(self.results, json_file, indent=4)
+
+    def _write_dataset_results(self, data_name):
+
+        dataset_results = \
+            [x for x in self.results if x["dataset"] == data_name]
+
+        file_path = os.path.join(self.output_dir, data_name + ".json")
+        with open(file_path, "w") as json_file:
+            json.dump(dataset_results, json_file, indent=4)
+
+    def _write_results(self):
+
+        path_dir = os.path.join(self.output_dir, "results")
+        os.mkdir(path_dir)
+
+        file_path = os.path.join(path_dir, "full.json")
+        with open(file_path, "w") as json_file:
+            json.dump(self.results, json_file, indent=4)
+
+        df_metrics = pd.DataFrame(self.results,
+                              columns=["model", "dataset", "auc", "topn",
+                                       "train_time", "test_time"])
+        df_metrics.to_csv(os.path.join(path_dir, "metrics.csv"))
+
+        for model_name in self.models.keys():
+
+            df_params = pd.DataFrame([v for x in self.results
+                                      if x["model"] == model_name
+                                      for k, v in x.items()
+                                      if k == "parameters"])
+            df_metrics.to_csv(os.path.join(path_dir, model_name + "_param.csv"))
+
 
     def run(self, n_iterations):
 
         self._check_models(self.models)
-        exit()
 
-        for dataset in self.datasets:
+        for data_name in self.datasets:
 
-            dataloader = DataLoader(dataset)
+            dataloader = DataLoader(data_name)
             X, y = dataloader.get_X(), dataloader.get_y()
 
-            for i in range(n_iterations):
+            for _ in range(n_iterations):
 
                 random_state = np.random.RandomState(self.iter_count)
 
@@ -150,15 +212,25 @@ class BenchMark:
                     param_grid = model_holder["param_grid"]
 
                     # Fit classifier, measure train time
-                    clf, train_time = \
+                    clf, param_set, train_time = \
                         self._fit_classifier(model, param_grid, X_train)
 
                     # Apply classifier, measure test time
                     y_fit, test_time = self._test_classifier(clf, X_test)
 
-                    roc, topn = self._eval_classifier(y_test, y_fit)
+                    auc, topn = self._eval_classifier(y_test, y_fit)
 
+                    self._add_result(model_name=model_name,
+                                     data_name=data_name,
+                                     auc=auc,
+                                     topn=topn,
+                                     train_time=train_time,
+                                     test_time=test_time,
+                                     param_set=param_set)
 
+            self._write_dataset_results(data_name)
+
+        self._write_results()
 
     def add_model(self, model_name, model):
 
@@ -167,33 +239,71 @@ class BenchMark:
             "param_grid": dict()
         }
 
-    def add_model_param(self, model_name, param_name, param_generator):
+        self._latest_added_model = model_name
+
+    def add_param(self, param_name, param_generator, model_name=None):
+
+        if not model_name:
+
+            if not self._latest_added_model:
+                raise Exception("First add model with .add_model()")
+
+            model_name = self._latest_added_model
 
         self.models[model_name]["param_grid"][param_name] = param_generator
 
+    def plot_params(self, model_name, n_draws=100, max_plot_cols=5):
 
-    @staticmethod
-    def _set_output_dir(output_dir):
+        # Extract model and parameter grid
+        param_grid = self.models[model_name]["param_grid"]
 
-        if output_dir is None:
-            suffix = strftime("%Y-%m-%d-%H-%M", gmtime())
-            output_dir = os.path.join("../benchmark", suffix)
+        rows_list = []
+        for _ in range(n_draws):
+            param_dict = self._draw_param_set(param_grid)
+            rows_list.append(param_dict)
+        df_params = pd.DataFrame(rows_list)
 
-        os.makedirs(output_dir, exist_ok=True)
+        n_plots = len(param_grid)
+        n_plt_cols = int(min(n_plots, max_plot_cols))
+        n_plt_rows = int(np.ceil(n_plots / max_plot_cols))
 
-        return output_dir
+        num_cols = df_params._get_numeric_data().columns
 
+        plt.figure(figsize=(n_plt_cols * 3 + 1, n_plt_rows * 2 + 1))
+        plt.subplots_adjust(wspace=.4, hspace=.3)
+        plt.suptitle("Parameters for {}".format(model_name))
+
+        for i, col in enumerate(df_params):
+
+            plt.subplot(n_plt_rows, n_plt_cols, i + 1)
+            plt.title(col)
+
+            if col in num_cols:
+                df_params[col].astype(float).plot.hist()
+            else:
+                df_params[col].value_counts().plot.bar()
+                plt.ylabel('Frequency')
+
+        plt.show()
 
 
 if __name__ == "__main__":
 
-    benchmark = BenchMark(output_dir="../benchmark")
+    benchmark = BenchMark(dataset_exclude=["annthyroid", "ecoli", "kdd-http", "kdd-smtp", "shuttle", "forest-cover", "mammography", "glass", "lympho"])
+
+    # Isolation forest
     benchmark.add_model("Isolation Forest", IForest)
-    #benchmark.add_model_param("Isolation Forest", "behaviour", lambda: "new")
-    benchmark.add_model_param("Isolation Forest", "n_estimators", lambda: np.random.randint(50, 1000))
+    benchmark.add_param("contamination", lambda: round(np.random.uniform(0.01, 0.3), ndigits=3))
+    benchmark.add_param("n_estimators", lambda: np.random.randint(50, 1000))
+    benchmark.add_param("max_features", lambda: np.random.randint(1, 4))
+    benchmark.add_param("bootstrap", lambda: int(np.random.choice([0, 1])))
+
+    # uCBLOF
     benchmark.add_model("uCBLOF", CBLOF)
-    benchmark.add_model_param("uCBLOF", "n_clusters", lambda: np.random.randint(3, 100))
-    benchmark.run(10)
+    benchmark.add_param("n_clusters", lambda: np.random.randint(3, 50))
+
+
+    benchmark.run(1)
 
     exit()
 
