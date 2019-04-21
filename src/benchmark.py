@@ -46,6 +46,8 @@ class BenchMark:
 
         self.results = []
 
+    # TODO: write restore method for continueing a becnhmarking experiment
+
     @staticmethod
     def _set_output_dir(output_dir):
 
@@ -63,6 +65,8 @@ class BenchMark:
 
     @staticmethod
     def _fit_classifier(model, param_grid, X_train):
+
+        # TODO: make method robust to incorrect parameter values
 
         # Draw parameter set
         param_set = BenchMark._draw_param_set(param_grid)
@@ -176,11 +180,15 @@ class BenchMark:
 
         for model_name in self.models.keys():
 
-            df_params = pd.DataFrame([v for x in self.results
-                                      if x["model"] == model_name
-                                      for k, v in x.items()
-                                      if k == "parameters"])
-            df_metrics.to_csv(os.path.join(path_dir, model_name + "_param.csv"))
+            param_dfs = []
+            for result in self.results:
+                if result["model"] == model_name:
+                    param_df = pd.io.json.json_normalize(result)
+                    param_dfs.append(param_df)
+
+            df_param = pd.concat(param_dfs, axis=1)
+            df_param.to_csv(os.path.join(path_dir,
+                                         "param_{}.csv".format(model_name)))
 
 
     def run(self, n_iterations):
@@ -306,5 +314,7 @@ if __name__ == "__main__":
     benchmark.run(1)
 
     exit()
+
+    # TODO: make notebook for running the benchmark
 
     print('0')
