@@ -1,4 +1,7 @@
 
+# Ignore html files (used for previewing README.md locally)
+*.html
+
 # Ignore data folder
 data/*
 !data/datasets.json
