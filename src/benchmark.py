@@ -2,6 +2,7 @@
 import json
 import os
 import random
+import glob
 
 from time import time, gmtime, strftime
 
@@ -30,23 +31,40 @@ from sklearn.preprocessing import StandardScaler
 
 import matplotlib.pyplot as plt
 
+# TODO: write docstrings for exposed functions
+
+
 class BenchMark:
 
     def __init__(self, dataset_exclude=None, output_dir=None):
 
         self.output_dir = self._set_output_dir(output_dir)
         self.datasets = download_all(dataset_exclude)
+
         self.models = dict()
-
-        df_columns = ['Data', 'nSamples', 'nDimensions', 'OutlierPerc', 'ABOD',
-                      'CBLOF', 'FB', 'HBOS', 'IForest', 'MCD', 'OCSVM', 'PCA']
-
-        self.iter_count = 0
         self._latest_added_model = None
-
         self.results = []
 
-    # TODO: write restore method for continueing a becnhmarking experiment
+    def load_previous_result(self, dir=None):
+
+        if not dir:
+            parent_dir = "../benchmark"
+            benchmark_dirs = glob.glob(parent_dir + "/*")
+            benchmark_dirs.sort()
+            dir = benchmark_dirs[-2]  # Before last element (current is last)
+
+        fp = os.path.join(dir, "backup.json")
+
+        with open(fp, "r") as json_file:
+            self.results = json.load(json_file)
+
+        print("Loaded {} runs from previous benchmark"
+              .format(len(self.results)))
+
+        prev_models = set([x["model"] for x in self.results])
+        prev_datasets = set([x["dataset"] for x in self.results])
+        print("--> Previous models: {}".format(prev_models))
+        print("--> Previous datasets: {}\n".format(prev_datasets))
 
     @staticmethod
     def _set_output_dir(output_dir):
@@ -64,23 +82,32 @@ class BenchMark:
         return {k: sampler() for k, sampler in param_grid.items()}
 
     @staticmethod
-    def _fit_classifier(model, param_grid, X_train):
+    def _fit_classifier(model, param_grid, X_train, max_tries=10):
 
-        # TODO: make method robust to incorrect parameter values
+        for i in range(max_tries):
 
-        # Draw parameter set
-        param_set = BenchMark._draw_param_set(param_grid)
+            try:
 
-        # Make model and set parameters
-        clf = model()
-        clf.set_params(**param_set)
+                # Draw parameter set
+                param_set = BenchMark._draw_param_set(param_grid)
 
-        # Fit model and measure training time
-        t_start = time()
-        clf.fit(X_train)
-        t_stop = time()
+                # Make model and set parameters
+                clf = model()
+                clf.set_params(**param_set)
 
-        return clf, param_set, round(t_stop - t_start, ndigits=4)
+                # Fit model and measure training time
+                t_start = time()
+                clf.fit(X_train)
+                t_stop = time()
+
+                return clf, param_set, round(t_stop - t_start, ndigits=4)
+
+            except ValueError:
+
+                print("Fit model {} failed: {} try".format(model, i + 1))
+
+        raise ValueError("Fit step model {} failed due to incorrect params"
+                         .format(model))
 
     @staticmethod
     def _test_classifier(clf, y_test):
@@ -155,27 +182,18 @@ class BenchMark:
         with open(file_path, "w") as json_file:
             json.dump(self.results, json_file, indent=4)
 
-    def _write_dataset_results(self, data_name):
-
-        dataset_results = \
-            [x for x in self.results if x["dataset"] == data_name]
-
-        file_path = os.path.join(self.output_dir, data_name + ".json")
-        with open(file_path, "w") as json_file:
-            json.dump(dataset_results, json_file, indent=4)
-
     def _write_results(self):
 
         path_dir = os.path.join(self.output_dir, "results")
         os.mkdir(path_dir)
 
-        file_path = os.path.join(path_dir, "full.json")
-        with open(file_path, "w") as json_file:
+        fp = os.path.join(path_dir, "full.json")
+        with open(fp, "w") as json_file:
             json.dump(self.results, json_file, indent=4)
 
-        df_metrics = pd.DataFrame(self.results,
-                              columns=["model", "dataset", "auc", "topn",
-                                       "train_time", "test_time"])
+        metric_cols = ["model", "dataset", "auc", "topn", "train_time",
+                       "test_time"]
+        df_metrics = pd.DataFrame(self.results, columns=metric_cols)
         df_metrics.to_csv(os.path.join(path_dir, "metrics.csv"))
 
         for model_name in self.models.keys():
@@ -187,8 +205,8 @@ class BenchMark:
                     param_dfs.append(param_df)
 
             df_param = pd.concat(param_dfs, axis=1)
-            df_param.to_csv(os.path.join(path_dir,
-                                         "param_{}.csv".format(model_name)))
+            fp = os.path.join(path_dir, "param_{}.csv".format(model_name))
+            df_param.to_csv(fp)
 
 
     def run(self, n_iterations):
@@ -202,11 +220,8 @@ class BenchMark:
 
             for _ in range(n_iterations):
 
-                random_state = np.random.RandomState(self.iter_count)
-
                 X_train, X_test, y_train, y_test = \
-                    train_test_split(X, y, test_size=0.4,
-                                     random_state=random_state)
+                    train_test_split(X, y, test_size=0.4)
 
                 # Scale train and test data, fit only based on train data!
                 X_scaler = StandardScaler()
@@ -236,8 +251,6 @@ class BenchMark:
                                      test_time=test_time,
                                      param_set=param_set)
 
-            self._write_dataset_results(data_name)
-
         self._write_results()
 
     def add_model(self, model_name, model):
@@ -248,6 +261,8 @@ class BenchMark:
         }
 
         self._latest_added_model = model_name
+
+        return self
 
     def add_param(self, param_name, param_generator, model_name=None):
 
@@ -260,7 +275,16 @@ class BenchMark:
 
         self.models[model_name]["param_grid"][param_name] = param_generator
 
-    def plot_params(self, model_name, n_draws=100, max_plot_cols=5):
+        return self
+
+    def plot_params(self, model_name=None, n_draws=1000, max_plot_cols=3):
+
+        if not model_name:
+
+            if not self._latest_added_model:
+                raise Exception("First add model with .add_model()")
+
+            model_name = self._latest_added_model
 
         # Extract model and parameter grid
         param_grid = self.models[model_name]["param_grid"]
@@ -277,7 +301,7 @@ class BenchMark:
 
         num_cols = df_params._get_numeric_data().columns
 
-        plt.figure(figsize=(n_plt_cols * 3 + 1, n_plt_rows * 2 + 1))
+        plt.figure(figsize=(n_plt_cols * 4 + 3, n_plt_rows * 3 + 2))
         plt.subplots_adjust(wspace=.4, hspace=.3)
         plt.suptitle("Parameters for {}".format(model_name))
 
@@ -297,7 +321,11 @@ class BenchMark:
 
 if __name__ == "__main__":
 
-    benchmark = BenchMark(dataset_exclude=["annthyroid", "ecoli", "kdd-http", "kdd-smtp", "shuttle", "forest-cover", "mammography", "glass", "lympho"])
+    dataset_exclude = ["annthyroid", "ecoli", "kdd-http", "kdd-smtp",
+                       "shuttle", "forest-cover", "mammography", "glass",
+                       "lympho"]
+    benchmark = BenchMark(dataset_exclude=dataset_exclude)
+
 
     # Isolation forest
     benchmark.add_model("Isolation Forest", IForest)
@@ -310,11 +338,6 @@ if __name__ == "__main__":
     benchmark.add_model("uCBLOF", CBLOF)
     benchmark.add_param("n_clusters", lambda: np.random.randint(3, 50))
 
-
-    benchmark.run(1)
+    benchmark.run(3)
 
     exit()
-
-    # TODO: make notebook for running the benchmark
-
-    print('0')
