@@ -1,7 +1,6 @@
 
 import json
 import os
-import random
 import glob
 
 from time import time, gmtime, strftime
@@ -9,18 +8,6 @@ from time import time, gmtime, strftime
 import pandas as pd
 import numpy as np
 
-# TODO: which models actually model the data?
-# TODO: select around 5 models for comparison
-from pyod.models.abod import ABOD
-from pyod.models.cblof import CBLOF
-from pyod.models.feature_bagging import FeatureBagging
-from pyod.models.hbos import HBOS
-from pyod.models.iforest import IForest
-from pyod.models.mcd import MCD
-from pyod.models.ocsvm import OCSVM
-from pyod.models.pca import PCA
-
-from pyod.utils.utility import standardizer
 from pyod.utils.utility import precision_n_scores
 from sklearn.metrics import roc_auc_score
 
@@ -320,6 +307,9 @@ class BenchMark:
 
 
 if __name__ == "__main__":
+
+    from pyod.models.cblof import CBLOF
+    from pyod.models.iforest import IForest
 
     dataset_exclude = ["annthyroid", "ecoli", "kdd-http", "kdd-smtp",
                        "shuttle", "forest-cover", "mammography", "glass",
